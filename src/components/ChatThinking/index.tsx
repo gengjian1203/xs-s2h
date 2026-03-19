@@ -15,7 +15,17 @@ const THINKING_GROUPS = [
 ]
 
 // 光影颜色梯度：暗 -> 亮 -> 暗
-const SHIMMER_COLORS = ['cyan', '#00CCCC', '#00FFFF', '#88FFFF', '#FFFFFF', '#88FFFF', '#00FFFF', '#00CCCC', 'cyan'] as const
+const SHIMMER_COLORS = [
+  'cyan',
+  '#00CCCC',
+  '#00FFFF',
+  '#88FFFF',
+  '#FFFFFF',
+  '#88FFFF',
+  '#00FFFF',
+  '#00CCCC',
+  'cyan',
+] as const
 const SHIMMER_WIDTH = SHIMMER_COLORS.length
 
 function pickRandom<T>(arr: T[]): T {

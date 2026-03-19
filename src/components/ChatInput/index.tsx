@@ -1,5 +1,7 @@
 import { Box, Text, useInput } from 'ink'
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
+
+import { filterCommands } from '@/commands/registry.js'
 
 interface ChatInputProps {
   disabled?: boolean
@@ -12,6 +14,7 @@ interface InputState {
   draft: string
   history: string[]
   historyIndex: number
+  suggestionIndex: number
 }
 
 const INIT_STATE: InputState = {
@@ -20,6 +23,7 @@ const INIT_STATE: InputState = {
   draft: '',
   history: [],
   historyIndex: -1,
+  suggestionIndex: 0,
 }
 
 type InputKey = {
@@ -32,6 +36,7 @@ type InputKey = {
   delete: boolean
   ctrl: boolean
   meta: boolean
+  tab: boolean
 }
 
 function clampCursor(cursor: number, value: string) {
@@ -55,25 +60,54 @@ function removeBackward(value: string, cursor: number) {
   }
 }
 
-// function removeForward(value: string, cursor: number) {
-//   if (cursor >= value.length) {
-//     return { value, cursor }
-//   }
-
-//   return {
-//     value: replaceRange(value, cursor, cursor + 1),
-//     cursor,
-//   }
-// }
-
 export function ChatInput({ disabled, onSubmit }: ChatInputProps) {
   const [state, setState] = useState<InputState>(INIT_STATE)
-  const { value, cursor } = state
+  const { value, cursor, suggestionIndex } = state
+
+  // 斜杠命令补全
+  const suggestions = useMemo(() => {
+    if (!value.startsWith('/') || value.includes(' ')) return []
+    return filterCommands(value)
+  }, [value])
+
+  const showSuggestions = suggestions.length > 0 && value.length > 0
 
   const handleInput = useCallback(
     (input: string, key: InputKey) => {
+      // Tab 补全
+      if (key.tab && showSuggestions) {
+        setState((s) => {
+          const cmd = suggestions[s.suggestionIndex]
+          if (!cmd) return s
+          const completed = `/${cmd.name} `
+          return {
+            ...s,
+            value: completed,
+            cursor: completed.length,
+            suggestionIndex: 0,
+          }
+        })
+        return
+      }
+
       if (key.return) {
         if (disabled) {
+          return
+        }
+
+        // 补全列表显示时，回车 = 选中补全项
+        if (showSuggestions) {
+          setState((s) => {
+            const cmd = suggestions[s.suggestionIndex]
+            if (!cmd) return s
+            const completed = `/${cmd.name} `
+            return {
+              ...s,
+              value: completed,
+              cursor: completed.length,
+              suggestionIndex: 0,
+            }
+          })
           return
         }
 
@@ -88,12 +122,21 @@ export function ChatInput({ disabled, onSubmit }: ChatInputProps) {
             draft: '',
             history: [trimmed, ...s.history],
             historyIndex: -1,
+            suggestionIndex: 0,
           }
         })
         return
       }
 
       if (key.upArrow) {
+        if (showSuggestions) {
+          // 在补全列表中上移
+          setState((s) => ({
+            ...s,
+            suggestionIndex: Math.max(0, s.suggestionIndex - 1),
+          }))
+          return
+        }
         setState((s) => {
           if (s.history.length === 0) return s
           const nextIdx = Math.min(s.historyIndex + 1, s.history.length - 1)
@@ -112,6 +155,14 @@ export function ChatInput({ disabled, onSubmit }: ChatInputProps) {
       }
 
       if (key.downArrow) {
+        if (showSuggestions) {
+          // 在补全列表中下移
+          setState((s) => ({
+            ...s,
+            suggestionIndex: Math.min(suggestions.length - 1, s.suggestionIndex + 1),
+          }))
+          return
+        }
         setState((s) => {
           if (s.historyIndex <= 0) {
             return {
@@ -146,6 +197,7 @@ export function ChatInput({ disabled, onSubmit }: ChatInputProps) {
           return {
             ...s,
             historyIndex: -1,
+            suggestionIndex: 0,
             value: nextState.value,
             cursor: nextState.cursor,
           }
@@ -162,6 +214,7 @@ export function ChatInput({ disabled, onSubmit }: ChatInputProps) {
           return {
             ...s,
             historyIndex: -1,
+            suggestionIndex: 0,
             value: nextState.value,
             cursor: nextState.cursor,
           }
@@ -173,12 +226,13 @@ export function ChatInput({ disabled, onSubmit }: ChatInputProps) {
         setState((s) => ({
           ...s,
           historyIndex: -1,
+          suggestionIndex: 0,
           value: replaceRange(s.value, s.cursor, s.cursor, input),
           cursor: s.cursor + input.length,
         }))
       }
     },
-    [disabled, onSubmit],
+    [disabled, onSubmit, showSuggestions, suggestions],
   )
 
   useInput(handleInput)
@@ -189,12 +243,26 @@ export function ChatInput({ disabled, onSubmit }: ChatInputProps) {
   const cursorColor = disabled ? 'gray' : 'cyan'
 
   return (
-    <Box marginTop={1}>
-      {/* ◇ */}
-      <Text color={cursorColor}>❯ </Text>
-      <Text>{before}</Text>
-      <Text inverse>{currentChar}</Text>
-      <Text>{after}</Text>
+    <Box flexDirection="column" marginTop={1}>
+      {/* 输入行 */}
+      <Box>
+        <Text color={cursorColor}>❯ </Text>
+        <Text>{before}</Text>
+        <Text inverse>{currentChar}</Text>
+        <Text>{after}</Text>
+      </Box>
+      {/* 斜杠命令补全提示 */}
+      {showSuggestions && (
+        <Box flexDirection="column" marginBottom={0}>
+          {suggestions.map((cmd, i) => (
+            <Text color={i === suggestionIndex ? 'cyan' : 'gray'} key={cmd.name}>
+              {i === suggestionIndex ? '▸ ' : '  '}/{cmd.name}
+              {'  '}
+              <Text dimColor>{cmd.description}</Text>
+            </Text>
+          ))}
+        </Box>
+      )}
     </Box>
   )
 }

@@ -1,6 +1,7 @@
-import { Box } from 'ink'
-import { useCallback, useState } from 'react'
+import { Box, useApp } from 'ink'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { matchSlashCommand } from '@/commands/registry.js'
 import { ChatHistory } from '@/components/ChatHistory/index.js'
 import { ChatInput } from '@/components/ChatInput/index.js'
 import { ChatThinking } from '@/components/ChatThinking/index.js'
@@ -10,14 +11,38 @@ import type { AppProps } from '@/types/app.js'
 import type { ChatMessage } from '@/types/chat.js'
 import { sleep } from '@/utils/simulateTask.js'
 
-export function App(_props: AppProps) {
+export function App({
+  initialPrompt,
+  stdinContent,
+  onExitMessageChange: _onExitMessageChange,
+}: AppProps) {
+  const { exit } = useApp()
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [loading, setLoading] = useState(false)
+  const initialSent = useRef(false)
 
   const handleSend = useCallback(
     async (content: string) => {
       if (loading) return
 
+      // 斜杠命令处理
+      const matched = matchSlashCommand(content)
+      if (matched) {
+        setMessages((prev) => [...prev, { role: 'user', content }])
+        const result = await matched.cmd.execute({
+          args: {},
+          rawInput: content,
+        })
+        if (result.output) {
+          setMessages((prev) => [...prev, { role: 'system', content: result.output! }])
+        }
+        if (result.exit) {
+          exit()
+        }
+        return
+      }
+
+      // 正常聊天流程
       setMessages((prev) => [...prev, { role: 'user', content }])
       setLoading(true)
 
@@ -27,8 +52,22 @@ export function App(_props: AppProps) {
       setMessages((prev) => [...prev, { role: 'assistant', content: reply }])
       setLoading(false)
     },
-    [loading],
+    [loading, exit],
   )
+
+  // 处理初始 prompt（来自 CLI 位置参数或管道输入）
+  useEffect(() => {
+    if (initialSent.current) return
+    initialSent.current = true
+
+    let prompt = initialPrompt ?? ''
+    if (stdinContent) {
+      prompt = prompt ? `${prompt}\n\n${stdinContent}` : stdinContent
+    }
+    if (prompt) {
+      void handleSend(prompt)
+    }
+  }, [initialPrompt, stdinContent, handleSend])
 
   return (
     <Box flexDirection="column" padding={1}>
