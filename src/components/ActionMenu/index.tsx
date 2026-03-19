@@ -28,8 +28,8 @@ export function ActionMenu({ options, selectedIndex, onChange, onSubmit }: Actio
       <Box flexDirection="column" marginTop={1}>
         {options.map((option, index) => {
           const active = index === selectedIndex
-          const pointer = active ? chalk.cyan(figures.pointer) : chalk.gray(' ')
-          const label = active ? chalk.cyan(option.label) : chalk.white(option.label)
+          const pointer = active ? chalk.green(figures.pointer) : chalk.gray(' ')
+          const label = active ? chalk.green(option.label) : chalk.white(option.label)
           const description = chalk.gray(option.description)
 
           return (

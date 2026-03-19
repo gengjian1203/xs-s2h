@@ -8,7 +8,7 @@ registerCommand({
   aliases: ['-h'],
   execute: async () => {
     const cmds = getAllCommands()
-    const lines = cmds.map((c) => `  ${chalk.cyan(`/${c.name}`)}  ${chalk.gray(c.description)}`)
+    const lines = cmds.map((c) => `  ${chalk.green(`/${c.name}`)}  ${chalk.gray(c.description)}`)
     const output = [chalk.bold('可用命令:'), '', ...lines, ''].join('\n')
     return { output }
   },

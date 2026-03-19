@@ -16,15 +16,15 @@ const THINKING_GROUPS = [
 
 // 光影颜色梯度：暗 -> 亮 -> 暗
 const SHIMMER_COLORS = [
-  'cyan',
-  '#00CCCC',
-  '#00FFFF',
-  '#88FFFF',
+  'green',
+  '#00CC66',
+  '#00FF88',
+  '#88FFAA',
   '#FFFFFF',
-  '#88FFFF',
-  '#00FFFF',
-  '#00CCCC',
-  'cyan',
+  '#88FFAA',
+  '#00FF88',
+  '#00CC66',
+  'green',
 ] as const
 const SHIMMER_WIDTH = SHIMMER_COLORS.length
 
@@ -52,7 +52,7 @@ function ShimmerText({ text }: { text: string }) {
       {chars.map((char, i) => {
         const offset = i - shimmerPos
         const colorIdx = offset + Math.floor(SHIMMER_WIDTH / 2)
-        const color = colorIdx >= 0 && colorIdx < SHIMMER_WIDTH ? SHIMMER_COLORS[colorIdx] : 'cyan'
+        const color = colorIdx >= 0 && colorIdx < SHIMMER_WIDTH ? SHIMMER_COLORS[colorIdx] : 'green'
         const bold = colorIdx >= 0 && colorIdx < SHIMMER_WIDTH
         return (
           <Text bold={bold} color={color} key={i}>
@@ -85,7 +85,7 @@ export function ChatThinking() {
 
   return (
     <Box marginTop={1}>
-      <Text color="cyan">{SPINNER_FRAMES[frame]} </Text>
+      <Text color="green">{SPINNER_FRAMES[frame]} </Text>
       <ShimmerText text={group[textIdx]} />
     </Box>
   )

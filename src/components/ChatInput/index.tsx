@@ -240,7 +240,7 @@ export function ChatInput({ disabled, onSubmit }: ChatInputProps) {
   const before = value.slice(0, cursor)
   const currentChar = value[cursor] ?? ' '
   const after = value.slice(Math.min(cursor + 1, value.length))
-  const cursorColor = disabled ? 'gray' : 'cyan'
+  const cursorColor = disabled ? 'gray' : 'green'
   const { stdout } = useStdout()
   const [columns, setColumns] = useState(stdout.columns ?? 80)
 
@@ -271,7 +271,7 @@ export function ChatInput({ disabled, onSubmit }: ChatInputProps) {
       {showSuggestions && (
         <Box flexDirection="column" marginBottom={0}>
           {suggestions.map((cmd, i) => (
-            <Text color={i === suggestionIndex ? 'cyan' : 'gray'} key={cmd.name}>
+            <Text color={i === suggestionIndex ? 'green' : 'gray'} key={cmd.name}>
               {i === suggestionIndex ? '▸ ' : '  '}/{cmd.name}
               {'  '}
               <Text dimColor>{cmd.description}</Text>

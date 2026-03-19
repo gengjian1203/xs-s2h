@@ -11,7 +11,7 @@ export const sleep = (ms: number) =>
 export async function simulateTask(actionId: Exclude<ActionId, 'exit'>): Promise<TaskResult> {
   await oraPromise(sleep(5000), {
     text: `${actionLabels[actionId]}中...`,
-    color: 'cyan',
+    color: 'green',
     spinner: 'dots',
   })
 
