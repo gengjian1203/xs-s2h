@@ -22,7 +22,7 @@ export function ChatHistory({ messages }: ChatHistoryProps) {
         const style = ROLE_STYLES[msg.role]
 
         return (
-          <Box key={i} marginTop={i === 0 ? 0 : 1}>
+          <Box key={i} marginTop={1}>
             <Text>
               {style.icon}
               {style.format(msg.content)}

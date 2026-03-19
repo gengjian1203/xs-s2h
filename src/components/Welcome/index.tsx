@@ -59,14 +59,14 @@ export function Welcome() {
   }
 
   return (
-    <Box borderColor="gray" borderStyle="round" marginBottom={1}>
-      <Box alignItems="center" justifyContent="center" width={LOGO_WIDTH + 2}>
+    <Box borderColor="gray" borderStyle="round">
+      <Box alignItems="center" flexGrow={1} justifyContent="center">
         <Text color="cyan">{LOGO}</Text>
       </Box>
-      <Box justifyContent="center" marginLeft={1}>
+      <Box alignItems="center" justifyContent="center">
         <Text color="gray">{'│\n'.repeat(8).trimEnd()}</Text>
       </Box>
-      <Box alignItems="center" marginLeft={1}>
+      <Box alignItems="center" flexGrow={2} justifyContent="center">
         {info}
       </Box>
     </Box>
