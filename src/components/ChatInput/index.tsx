@@ -55,16 +55,16 @@ function removeBackward(value: string, cursor: number) {
   }
 }
 
-function removeForward(value: string, cursor: number) {
-  if (cursor >= value.length) {
-    return { value, cursor }
-  }
+// function removeForward(value: string, cursor: number) {
+//   if (cursor >= value.length) {
+//     return { value, cursor }
+//   }
 
-  return {
-    value: replaceRange(value, cursor, cursor + 1),
-    cursor,
-  }
-}
+//   return {
+//     value: replaceRange(value, cursor, cursor + 1),
+//     cursor,
+//   }
+// }
 
 export function ChatInput({ disabled, onSubmit }: ChatInputProps) {
   const [state, setState] = useState<InputState>(INIT_STATE)
@@ -190,7 +190,8 @@ export function ChatInput({ disabled, onSubmit }: ChatInputProps) {
 
   return (
     <Box marginTop={1}>
-      <Text color={cursorColor}>◇ </Text>
+      {/* ◇ */}
+      <Text color={cursorColor}>❯ </Text>
       <Text>{before}</Text>
       <Text inverse>{currentChar}</Text>
       <Text>{after}</Text>

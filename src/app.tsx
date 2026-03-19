@@ -3,17 +3,11 @@ import { useCallback, useState } from 'react'
 
 import { ChatHistory } from '@/components/ChatHistory/index.js'
 import { ChatInput } from '@/components/ChatInput/index.js'
+import { ChatThinking } from '@/components/ChatThinking/index.js'
 import { Welcome } from '@/components/Welcome/index.js'
+import { MOCK_REPLIES } from '@/const/mock.js'
 import type { AppProps } from '@/types/app.js'
 import type { ChatMessage } from '@/types/chat.js'
-
-const MOCK_REPLIES = [
-  '收到，正在为你处理...',
-  '好的，让我看看这个问题。',
-  '这是一个很好的问题，我来分析一下。',
-  '已理解你的需求，稍后给你反馈。',
-  '没问题，马上安排。',
-]
 
 export function App(_props: AppProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([])
@@ -36,12 +30,15 @@ export function App(_props: AppProps) {
     [loading],
   )
 
-  const showHistory = messages.length > 0 || loading
-
   return (
     <Box flexDirection="column" padding={1}>
+      {/* 欢迎界面 */}
       <Welcome />
-      {showHistory && <ChatHistory loading={loading} messages={messages} />}
+      {/* 聊天历史 */}
+      <ChatHistory messages={messages} />
+      {/* 思考中 */}
+      {loading && <ChatThinking />}
+      {/* 输入框 */}
       <ChatInput disabled={loading} onSubmit={handleSend} />
     </Box>
   )

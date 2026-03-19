@@ -11,10 +11,8 @@
     "dev": "tsx src/index.tsx",
     "start": "node dist/index.js",
     "build": "tsc && tsc-alias",
-    "lint": "eslint src/",
-    "lint:fix": "eslint src/ --fix",
-    "format": "prettier --write src/",
-    "format:check": "prettier --check src/"
+    "lint": "prettier --check src/ && eslint src/",
+    "lint:fix": "prettier --write src/ && eslint src/ --fix"
   },
   "dependencies": {
     "@clack/prompts": "^0.10.1",
