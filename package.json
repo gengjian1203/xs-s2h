@@ -1,7 +1,8 @@
 {
-  "name": "xs-s2h",
-  "version": "1.0.0",
+  "name": "xs-s2h-cli",
+  "version": "0.0.1",
   "private": true,
+  "description": "设计即页面，落地在眼前",
   "type": "module",
   "bin": {
     "xs-s2h": "./dist/index.js"

@@ -1,88 +1,48 @@
-import chalk from 'chalk'
-import { Box, Text, useApp } from 'ink'
-import React, { useEffect, useState } from 'react'
+import { Box } from 'ink'
+import { useCallback, useState } from 'react'
 
-import { ActionMenu } from '@/components/ActionMenu/index.js'
-import { ResultPanel } from '@/components/ResultPanel/index.js'
+import { ChatHistory } from '@/components/ChatHistory/index.js'
+import { ChatInput } from '@/components/ChatInput/index.js'
 import { Welcome } from '@/components/Welcome/index.js'
-import { actionOptions } from '@/const/actions.js'
-import type { TaskResult } from '@/types/actions.js'
-import type { AppProps, ScreenState } from '@/types/app.js'
-import { simulateTask } from '@/utils/simulateTask.js'
+import type { AppProps } from '@/types/app.js'
+import type { ChatMessage } from '@/types/chat.js'
 
-function createExitMessage(screen: ScreenState, result: TaskResult | null) {
-  if (screen === 'result' && result) {
-    return [
-      '',
-      chalk.green(`已结束：${result.title}`),
-      chalk.gray(result.summary),
-      chalk.gray('如需继续使用，请重新运行 `xs-s2h`。'),
-    ].join('\n')
-  }
+const MOCK_REPLIES = [
+  '收到，正在为你处理...',
+  '好的，让我看看这个问题。',
+  '这是一个很好的问题，我来分析一下。',
+  '已理解你的需求，稍后给你反馈。',
+  '没问题，马上安排。',
+]
 
-  return ['', chalk.gray('CLI 已关闭。'), chalk.gray('如需继续使用，请重新运行 `xs-s2h`。')].join(
-    '\n',
+export function App(_props: AppProps) {
+  const [messages, setMessages] = useState<ChatMessage[]>([])
+  const [loading, setLoading] = useState(false)
+
+  const handleSend = useCallback(
+    (content: string) => {
+      if (loading) return
+
+      setMessages((prev) => [...prev, { role: 'user', content }])
+      setLoading(true)
+
+      const delay = 800 + Math.random() * 1500
+      setTimeout(() => {
+        const reply = MOCK_REPLIES[Math.floor(Math.random() * MOCK_REPLIES.length)]
+        setMessages((prev) => [...prev, { role: 'assistant', content: reply }])
+        setLoading(false)
+      }, delay)
+    },
+    [loading],
   )
-}
 
-export function App({ onExitMessageChange }: AppProps) {
-  const { exit } = useApp()
-  const [screen, setScreen] = useState<ScreenState>('menu')
-  const [selectedIndex, setSelectedIndex] = useState(0)
-  const [result, setResult] = useState<TaskResult | null>(null)
-
-  useEffect(() => {
-    onExitMessageChange?.(createExitMessage(screen, result))
-  }, [onExitMessageChange, result, screen])
-
-  useEffect(() => {
-    if (screen === 'exit') {
-      exit()
-    }
-  }, [exit, screen])
-
-  const selectedAction = actionOptions[selectedIndex]
-
-  const handleSubmit = async () => {
-    if (selectedAction.id === 'exit') {
-      setScreen('exit')
-      return
-    }
-
-    setScreen('running')
-    const nextResult = await simulateTask(selectedAction.id)
-    setResult(nextResult)
-    setScreen('result')
-  }
+  const showHistory = messages.length > 0 || loading
 
   return (
     <Box flexDirection="column" padding={1}>
       <Welcome />
-
-      {screen === 'menu' && (
-        <ActionMenu
-          onChange={setSelectedIndex}
-          onSubmit={() => {
-            void handleSubmit()
-          }}
-          options={actionOptions}
-          selectedIndex={selectedIndex}
-        />
-      )}
-
-      {screen === 'running' && (
-        <Box flexDirection="column">
-          <Text>{chalk.bold('执行中')}</Text>
-          <Text color="gray">│ 正在处理你的请求，请稍候...</Text>
-        </Box>
-      )}
-
-      {screen === 'result' && result && (
-        <Box flexDirection="column">
-          <ResultPanel result={result} />
-          <Text color="gray">{'\n│ 按 Ctrl+C 退出，或重新运行命令再次体验。'}</Text>
-        </Box>
-      )}
+      {showHistory && <ChatHistory loading={loading} messages={messages} />}
+      <ChatInput disabled={loading} onSubmit={handleSend} />
     </Box>
   )
 }
