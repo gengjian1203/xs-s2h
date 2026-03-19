@@ -1,5 +1,5 @@
-import { Box, Text, useInput } from 'ink'
-import { useCallback, useMemo, useState } from 'react'
+import { Box, Text, useInput, useStdout } from 'ink'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { filterCommands } from '@/commands/registry.js'
 
@@ -241,15 +241,31 @@ export function ChatInput({ disabled, onSubmit }: ChatInputProps) {
   const currentChar = value[cursor] ?? ' '
   const after = value.slice(Math.min(cursor + 1, value.length))
   const cursorColor = disabled ? 'gray' : 'cyan'
+  const { stdout } = useStdout()
+  const [columns, setColumns] = useState(stdout.columns ?? 80)
+
+  useEffect(() => {
+    const onResize = () => setColumns(stdout.columns ?? 80)
+    stdout.on('resize', onResize)
+    return () => {
+      stdout.off('resize', onResize)
+    }
+  }, [stdout])
+
+  const divider = '─'.repeat(Math.floor(columns - 2))
 
   return (
     <Box flexDirection="column" marginTop={1}>
       {/* 输入行 */}
-      <Box>
-        <Text color={cursorColor}>❯ </Text>
-        <Text>{before}</Text>
-        <Text inverse>{currentChar}</Text>
-        <Text>{after}</Text>
+      <Box flexDirection="column">
+        <Text dimColor>{divider}</Text>
+        <Box flexDirection="row">
+          <Text color={cursorColor}>❯ </Text>
+          <Text>{before}</Text>
+          <Text inverse>{currentChar}</Text>
+          <Text>{after}</Text>
+        </Box>
+        <Text dimColor>{divider}</Text>
       </Box>
       {/* 斜杠命令补全提示 */}
       {showSuggestions && (
